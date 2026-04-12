@@ -1,14 +1,9 @@
 package com.example.taskmanager;
 
 import com.google.api.core.ApiFuture;
-import com.google.auth.oauth2.GoogleCredentials;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.*;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
-import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -16,32 +11,6 @@ import java.util.concurrent.CompletableFuture;
 @RequestMapping("/tasks")
 @CrossOrigin(origins = "*")
 public class TaskController {
-
-    // 🔥 Firebase Init
-@Configuration
-public class FirebaseConfig {
-
-    @PostConstruct
-    public void init() {
-        try {
-            InputStream serviceAccount =
-                    getClass().getClassLoader()
-                            .getResourceAsStream("serviceAccountKey.json");
-
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("YOUR_DB_URL")
-                    .build();
-
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
 
     // ✅ ADD TASK
     @PostMapping
@@ -58,7 +27,7 @@ public class FirebaseConfig {
         return task;
     }
 
-    // ✅ GET ALL TASKS (FIXED PROPERLY)
+    // ✅ GET TASKS
     @GetMapping
     public CompletableFuture<List<Object>> getTasks() {
 

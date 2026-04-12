@@ -1,3 +1,13 @@
+package com.example.taskmanager;
+
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
+import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Configuration;
+
+import java.io.InputStream;
+
 @Configuration
 public class FirebaseConfig {
 
@@ -8,13 +18,18 @@ public class FirebaseConfig {
                     getClass().getClassLoader()
                             .getResourceAsStream("serviceAccountKey.json");
 
+            if (serviceAccount == null) {
+                throw new RuntimeException("❌ serviceAccountKey.json not found in resources");
+            }
+
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("YOUR_DB_URL")
+                    .setDatabaseUrl("YOUR_FIREBASE_DATABASE_URL") // 👈 replace this
                     .build();
 
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
+                System.out.println("🔥 Firebase Initialized Successfully");
             }
 
         } catch (Exception e) {
