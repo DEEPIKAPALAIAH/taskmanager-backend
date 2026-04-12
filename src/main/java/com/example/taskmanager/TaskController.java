@@ -18,26 +18,33 @@ import java.util.concurrent.CompletableFuture;
 public class TaskController {
 
     // 🔥 Firebase Init
-    @PostConstruct
-    public void init() {
-        try {
-            InputStream serviceAccount =
-                    getClass().getClassLoader().getResourceAsStream("serviceAccountKey.json");
+@PostConstruct
+public void init() {
+    try {
+        InputStream serviceAccount =
+                getClass().getClassLoader().getResourceAsStream("serviceAccountKey.json");
 
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("https://task-manager-app-77e2f-default-rtdb.firebaseio.com/")
-                    .build();
-
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-                System.out.println("✅ Firebase Connected");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (serviceAccount == null) {
+            System.out.println("❌ Firebase key NOT FOUND");
+            throw new RuntimeException("Firebase key missing");
+        } else {
+            System.out.println("✅ Firebase key LOADED");
         }
+
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setDatabaseUrl("https://task-manager-app-77e2f-default-rtdb.firebaseio.com/")
+                .build();
+
+        if (FirebaseApp.getApps().isEmpty()) {
+            FirebaseApp.initializeApp(options);
+            System.out.println("✅ Firebase Connected");
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
     }
+}
 
     // ✅ ADD TASK
     @PostMapping
