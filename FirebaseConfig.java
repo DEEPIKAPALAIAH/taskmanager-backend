@@ -19,17 +19,17 @@ public class FirebaseConfig {
                             .getResourceAsStream("serviceAccountKey.json");
 
             if (serviceAccount == null) {
-                throw new RuntimeException("❌ serviceAccountKey.json not found in resources");
+                throw new RuntimeException("Firebase key missing");
             }
 
             FirebaseOptions options = FirebaseOptions.builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("YOUR_FIREBASE_DATABASE_URL") // 👈 replace this
+                    .setDatabaseUrl("YOUR_REAL_DB_URL")
                     .build();
 
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
-                System.out.println("🔥 Firebase Initialized Successfully");
+                System.out.println("🔥 Firebase Initialized");
             }
 
         } catch (Exception e) {
