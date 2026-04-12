@@ -1,14 +1,16 @@
-# Use Maven + Java 17
-FROM maven:3.9.6-eclipse-temurin-17
-
-# Set working directory
+# Build stage
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 WORKDIR /app
-
-# Copy all project files
 COPY . .
-
-# Build the Spring Boot app
 RUN mvn clean package -DskipTests
 
-# Run the generated jar
-CMD ["java", "-jar", "target/*.jar"]
+# Run stage
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+
+# Copy jar and rename it
+COPY --from=build /app/target/*.jar app.jar
+
+EXPOSE 8080
+
+CMD ["java", "-jar", "app.jar"]
