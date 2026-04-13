@@ -3,7 +3,7 @@ package com.example.taskmanager;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import jakarta.annotation.PostConstruct;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.io.InputStream;
@@ -11,29 +11,27 @@ import java.io.InputStream;
 @Configuration
 public class FirebaseConfig {
 
-    @PostConstruct
-    public void init() {
-        try {
-            InputStream serviceAccount =
-                    getClass().getClassLoader()
-                            .getResourceAsStream("serviceAccountKey.json");
+    @Bean
+    public FirebaseApp firebaseApp() throws Exception {
 
-            if (serviceAccount == null) {
-                throw new RuntimeException("Firebase key missing");
-            }
-
-            FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("YOUR_REAL_DB_URL")
-                    .build();
-
-            if (FirebaseApp.getApps().isEmpty()) {
-                FirebaseApp.initializeApp(options);
-                System.out.println("🔥 Firebase Initialized");
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
+        // If already initialized, return existing instance
+        if (!FirebaseApp.getApps().isEmpty()) {
+            return FirebaseApp.getInstance();
         }
+
+        // Load the service account key from resources
+        InputStream serviceAccount = getClass()
+                .getClassLoader()
+                .getResourceAsStream("serviceAccountKey.json");
+
+        if (serviceAccount == null) {
+            throw new RuntimeException("serviceAccountKey.json NOT FOUND in src/main/resources");
+        }
+
+        FirebaseOptions options = FirebaseOptions.builder()
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .build(); // Do NOT set databaseUrl unless you use Realtime DB
+
+        return FirebaseApp.initializeApp(options);
     }
 }

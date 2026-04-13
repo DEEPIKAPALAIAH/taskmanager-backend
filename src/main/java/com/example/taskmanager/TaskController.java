@@ -5,70 +5,59 @@ import com.google.firebase.database.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/tasks")
 @CrossOrigin(origins = "*")
 public class TaskController {
 
+    private final DatabaseReference ref =
+            FirebaseDatabase.getInstance().getReference("tasks");
+
     // ✅ ADD TASK
     @PostMapping
     public Map<String, Object> addTask(@RequestBody Map<String, Object> task) throws Exception {
 
-        DatabaseReference ref = FirebaseDatabase.getInstance()
-                .getReference("tasks");
-
         task.put("status", "pending");
 
         ApiFuture<Void> future = ref.push().setValueAsync(task);
+
+        // safer for Render (can still throw if Firebase fails)
         future.get();
 
         return task;
     }
 
-    // ✅ GET TASKS
+    // ✅ GET TASKS (FIXED: includes Firebase ID)
     @GetMapping
-    public CompletableFuture<List<Object>> getTasks() {
+    public List<Map<String, Object>> getTasks() throws Exception {
 
-        CompletableFuture<List<Object>> result = new CompletableFuture<>();
+        List<Map<String, Object>> tasks = new ArrayList<>();
 
-        DatabaseReference ref = FirebaseDatabase.getInstance()
-                .getReference("tasks");
+        DataSnapshot snapshot = ref.get().get(); // synchronous safe fetch
 
-        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+        for (DataSnapshot child : snapshot.getChildren()) {
 
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
+            Map<String, Object> task = (Map<String, Object>) child.getValue();
 
-                List<Object> tasks = new ArrayList<>();
-
-                for (DataSnapshot child : snapshot.getChildren()) {
-                    tasks.add(child.getValue());
-                }
-
-                result.complete(tasks);
+            if (task != null) {
+                task.put("id", child.getKey()); // ⭐ IMPORTANT FIX
+                tasks.add(task);
             }
+        }
 
-            @Override
-            public void onCancelled(DatabaseError error) {
-                result.completeExceptionally(error.toException());
-            }
-        });
-
-        return result;
+        return tasks;
     }
 
-    // ✅ DELETE TASK
+    // ✅ DELETE TASK (SAFE VERSION)
     @DeleteMapping("/{id}")
     public String deleteTask(@PathVariable String id) throws Exception {
 
-        DatabaseReference ref = FirebaseDatabase.getInstance()
-                .getReference("tasks")
-                .child(id);
+        if (id == null || id.isEmpty()) {
+            return "Invalid ID";
+        }
 
-        ApiFuture<Void> future = ref.removeValueAsync();
-        future.get();
+        ref.child(id).removeValueAsync();
 
         return "Task Deleted Successfully";
     }
