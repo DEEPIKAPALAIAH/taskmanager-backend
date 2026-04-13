@@ -21,27 +21,26 @@ public class TaskController {
         task.put("status", "pending");
 
         ApiFuture<Void> future = ref.push().setValueAsync(task);
-
-        // safer for Render (can still throw if Firebase fails)
-        future.get();
+        future.get(); // wait for Firebase write
 
         return task;
     }
 
-    // ✅ GET TASKS (FIXED: includes Firebase ID)
+    // ✅ GET TASKS
     @GetMapping
     public List<Map<String, Object>> getTasks() throws Exception {
 
-        List<Map<String, Object>> tasks = new ArrayList<>();
+        ApiFuture<DataSnapshot> future = ref.get();
+        DataSnapshot snapshot = future.get();
 
-        DataSnapshot snapshot = ref.get().get(); // synchronous safe fetch
+        List<Map<String, Object>> tasks = new ArrayList<>();
 
         for (DataSnapshot child : snapshot.getChildren()) {
 
             Map<String, Object> task = (Map<String, Object>) child.getValue();
 
             if (task != null) {
-                task.put("id", child.getKey()); // ⭐ IMPORTANT FIX
+                task.put("id", child.getKey()); // include Firebase ID
                 tasks.add(task);
             }
         }
@@ -49,9 +48,9 @@ public class TaskController {
         return tasks;
     }
 
-    // ✅ DELETE TASK (SAFE VERSION)
+    // ✅ DELETE TASK
     @DeleteMapping("/{id}")
-    public String deleteTask(@PathVariable String id) throws Exception {
+    public String deleteTask(@PathVariable String id) {
 
         if (id == null || id.isEmpty()) {
             return "Invalid ID";
