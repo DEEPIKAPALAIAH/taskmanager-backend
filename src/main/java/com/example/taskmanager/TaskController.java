@@ -1,5 +1,5 @@
 package com.example.taskmanager;
-
+import com.google.firebase.FirebaseApp;
 import com.google.api.core.ApiFuture;
 import com.google.firebase.database.*;
 import org.springframework.web.bind.annotation.*;
@@ -12,12 +12,12 @@ public class TaskController {
 
     private final DatabaseReference ref;
 
-    public TaskController(com.google.firebase.FirebaseApp firebaseApp) {
-        this.ref = FirebaseDatabase
-                .getInstance(firebaseApp)
-                .getReference("tasks");
-    }
-    
+  public TaskController(FirebaseApp firebaseApp) {
+    this.ref = FirebaseDatabase
+            .getInstance(firebaseApp)
+            .getReference("tasks");
+}
+
     @PostMapping
     public Map<String, Object> addTask(@RequestBody Map<String, Object> task) throws Exception {
         task.put("status", "pending");
