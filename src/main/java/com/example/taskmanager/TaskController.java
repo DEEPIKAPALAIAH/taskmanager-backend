@@ -12,11 +12,17 @@ public class TaskController {
 
     private final DatabaseReference ref;
 
-  public TaskController(FirebaseApp firebaseApp) {
-    this.ref = FirebaseDatabase
-            .getInstance(firebaseApp)
-            .getReference("tasks");
-}
+    public TaskController(FirebaseApp firebaseApp) {
+        this.ref = FirebaseDatabase
+                .getInstance(firebaseApp)
+                .getReference("tasks");
+    }
+
+    // 🔥 ADD THIS METHOD
+    @GetMapping("/")
+    public String home() {
+        return "Backend is running 🚀";
+    }
 
     @PostMapping
     public Map<String, Object> addTask(@RequestBody Map<String, Object> task) throws Exception {
