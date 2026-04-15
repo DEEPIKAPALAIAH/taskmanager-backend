@@ -29,8 +29,9 @@ public class FirebaseConfig {
         }
 
         FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .build(); // Do NOT set databaseUrl unless you use Realtime DB
+        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+        .setDatabaseUrl("https://task-manager-app-77e2f-default-rtdb.firebaseio.com/")
+        .build();
 
         return FirebaseApp.initializeApp(options);
     }
