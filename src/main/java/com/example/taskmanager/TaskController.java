@@ -27,27 +27,45 @@ public class TaskController {
     }
 
     // ✅ GET TASKS
-    @GetMapping
-    public List<Map<String, Object>> getTasks() throws Exception {
+   @GetMapping
+public List<Map<String, Object>> getTasks() throws Exception {
 
-        ApiFuture<DataSnapshot> future = ref.get();
-        DataSnapshot snapshot = future.get();
+    List<Map<String, Object>> tasks = new ArrayList<>();
 
-        List<Map<String, Object>> tasks = new ArrayList<>();
+    final Object lock = new Object();
 
-        for (DataSnapshot child : snapshot.getChildren()) {
+    ref.addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot snapshot) {
 
-            Map<String, Object> task = (Map<String, Object>) child.getValue();
+            for (DataSnapshot child : snapshot.getChildren()) {
+                Map<String, Object> task = (Map<String, Object>) child.getValue();
 
-            if (task != null) {
-                task.put("id", child.getKey()); // include Firebase ID
-                tasks.add(task);
+                if (task != null) {
+                    task.put("id", child.getKey());
+                    tasks.add(task);
+                }
+            }
+
+            synchronized (lock) {
+                lock.notify();
             }
         }
 
-        return tasks;
+        @Override
+        public void onCancelled(DatabaseError error) {
+            synchronized (lock) {
+                lock.notify();
+            }
+        }
+    });
+
+    synchronized (lock) {
+        lock.wait(); // wait until Firebase responds
     }
 
+    return tasks;
+}
     // ✅ DELETE TASK
     @DeleteMapping("/{id}")
     public String deleteTask(@PathVariable String id) {
