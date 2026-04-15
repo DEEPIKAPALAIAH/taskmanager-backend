@@ -14,24 +14,23 @@ public class FirebaseConfig {
     @Bean
     public FirebaseApp firebaseApp() throws Exception {
 
-        // If already initialized, return existing instance
         if (!FirebaseApp.getApps().isEmpty()) {
             return FirebaseApp.getInstance();
         }
 
-        // Load the service account key from resources
-        InputStream serviceAccount = getClass()
-                .getClassLoader()
-                .getResourceAsStream("serviceAccountKey.json");
+        String firebaseConfig = System.getenv("FIREBASE_KEY");
 
-        if (serviceAccount == null) {
-            throw new RuntimeException("serviceAccountKey.json NOT FOUND in src/main/resources");
+        if (firebaseConfig == null) {
+            throw new RuntimeException("FIREBASE_KEY not set");
         }
 
+        InputStream serviceAccount =
+                new ByteArrayInputStream(firebaseConfig.getBytes());
+
         FirebaseOptions options = FirebaseOptions.builder()
-        .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-        .setDatabaseUrl("https://task-manager-app-77e2f-default-rtdb.firebaseio.com/")
-        .build();
+                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
+                .setDatabaseUrl("https://task-manager-app-77e2f-default-rtdb.firebaseio.com/")
+                .build();
 
         return FirebaseApp.initializeApp(options);
     }
